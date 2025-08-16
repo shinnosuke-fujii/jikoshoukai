@@ -33,16 +33,24 @@ RUN bundle exec bootsnap precompile app/ lib/
 
 # ===== Final stage =====
 FROM base
+
+# gems とアプリをコピー
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
+# 起動ユーザーに必要ディレクトリの書き込み権限を付与
+RUN mkdir -p tmp/pids tmp/cache tmp/sockets public/assets && \
+    chown -R rails:rails tmp log storage public
+
+# 非rootで実行
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
+    chown -R rails:rails db
 USER 1000:1000
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 EXPOSE 80
+CMD ["bash", "-lc", "bin/rails assets:precompile && ./bin/thrust ./bin/rails server"]
 
 # 起動時にプリコンパイル（ここなら RAILS_MASTER_KEY は通常の環境変数でOK）
 CMD ["bash", "-lc", "bin/rails assets:precompile && ./bin/thrust ./bin/rails server"]
