@@ -38,17 +38,18 @@ FROM base
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# 起動ユーザーに必要ディレクトリの書き込み権限を付与
-RUN mkdir -p tmp/pids tmp/cache tmp/sockets public/assets && \
-    chown -R rails:rails tmp log storage public
-
-# 非rootで実行
+# 先にユーザーを作成
 RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
+
+# 必要ディレクトリの作成と権限付与（rootで実行）
+RUN mkdir -p /rails/tmp/pids /rails/tmp/cache /rails/tmp/sockets /rails/public/assets && \
+    chown -R rails:rails /rails/db /rails/log /rails/storage /rails/tmp /rails/public
+
 USER 1000:1000
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 EXPOSE 80
+# 起動時プリコンパイル → サーバ起動
 CMD ["bash", "-lc", "bin/rails assets:precompile && ./bin/thrust ./bin/rails server"]
 
