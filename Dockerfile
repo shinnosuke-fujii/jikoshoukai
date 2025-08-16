@@ -52,5 +52,3 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 EXPOSE 80
 CMD ["bash", "-lc", "bin/rails assets:precompile && ./bin/thrust ./bin/rails server"]
 
-# 起動時にプリコンパイル（ここなら RAILS_MASTER_KEY は通常の環境変数でOK）
-CMD ["bash", "-lc", "bin/rails assets:precompile && ./bin/thrust ./bin/rails server"]
