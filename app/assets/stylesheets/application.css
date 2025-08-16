@@ -1,0 +1,539 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+.intro-image {
+  max-width: 300px; /* 横幅の上限 */
+  height: auto;     /* 縦横比を維持 */
+  display: block;   /* 余計な余白を消す場合 */
+}
+
+.carousel { position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+.carousel-track {
+  display: flex;
+  transition: transform 0.35s ease;
+  will-change: transform;        /* ← GPUにヒント */
+  transform: translateZ(0);      /* ← レンダリング安定化 */
+}
+
+.carousel-slide {
+  flex: 0 0 100%;                /* ← 1枚=100%幅（JSのwidth指定は不要に） */
+  width: 100%;
+  height: 300px;                 /* indexと合わせるならここを同値に */
+  display: block;
+  object-fit: contain;           /* 枠内に収める */
+  object-position: center;       /* 中央に配置 */
+  background: #000;              /* 余白は黒 */
+  backface-visibility: hidden;   /* ← Chrome/Safariの描画抜け対策 */
+  transform: translateZ(0);      /* ← さらに安定化 */
+}
+
+
+/* 既存の .carousel-btn / .carousel-dots は前回のままでOK */
+
+/* 前後ボタン */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28px;
+  line-height: 1;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  border: 0;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  user-select: none;
+}
+.carousel-btn:hover { background: rgba(0,0,0,0.6); }
+.carousel-btn.prev { left: 8px; }
+.carousel-btn.next { right: 8px; }
+
+/* ドット */
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0; right: 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.carousel-dots .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+}
+.carousel-dots .dot.active { background: #fff; }
+
+
+/* 横並びレイアウト */
+.intro-container {
+  display: flex;
+  align-items: center; /* 縦位置を揃える */
+  gap: 60px; /* スライドと文章の間隔 */
+  max-width: 1100px;
+  margin: 40px auto;
+}
+
+/* 自己紹介テキスト */
+.kihon {
+  flex: 1;
+  font-size: 20px; /* 文字サイズアップ */
+  line-height: 1.8; /* 行間広めで見やすく */
+}
+
+.kihon p {
+  margin: 0 0 10px;
+}
+
+/* スライドショーを少し縮小して横に収まるように */
+.carousel {
+  flex: 1;
+  max-width: 600px;
+}
+
+/* --- 768px以下：スマホ/タブレット縦並び --- */
+@media (max-width: 768px) {
+  .intro-container {
+    flex-direction: column;   /* 縦並び */
+    align-items: stretch;
+    gap: 16px;
+    margin: 16px;             /* 余白を少し小さく */
+  }
+
+  .carousel {
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;     /* 画面幅にフィット */
+    border-radius: 10px;
+  }
+
+  .carousel-btn {
+    /* タップしやすい大きさに */
+    padding: 10px 14px;
+    font-size: 24px;
+  }
+
+  .carousel-dots .dot {
+    width: 8px; height: 8px;
+  }
+
+  .kihon {
+    font-size: 18px;          /* モバイルで少し下げて可読性確保 */
+    line-height: 1.8;
+  }
+}
+
+/* --- 360px以下：小さめ端末の最適化(任意) --- */
+@media (max-width: 360px) {
+  .kihon { font-size: 16px; }
+}
+
+
+/* --- Ripple buttons container --- */
+.links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  /* 必要なら中央寄せ */
+  /* justify-content: center; */
+  margin-bottom: 16px;
+}
+
+/* --- Ripple button --- */
+.button-ripple {
+  background: #4facfe;            /* 青系（通常時） */
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;          /* aタグの下線削除 */
+  display: inline-block;
+  line-height: 1;
+  transition: background 0.3s ease;
+}
+
+.button-ripple span {
+  position: relative;
+  z-index: 1;                     /* 波紋の上に文字を表示 */
+}
+
+/* 波紋本体 */
+.button-ripple::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, #ff6a88, #ff99ac); /* ピンク系 */
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 0;
+  transition: width 0.5s ease, height 0.5s ease;
+}
+
+/* ホバー/フォーカスで波紋が広がる */
+.button-ripple:hover::after,
+.button-ripple:focus-visible::after {
+  width: 300%;
+  height: 300%;
+}
+
+/* キーボード操作でのフォーカス強調（アクセシビリティ） */
+.button-ripple:focus-visible {
+  outline: 3px solid rgba(79, 172, 254, 0.4);
+  outline-offset: 3px;
+  /* 併せて少しだけ背景も青を明るく */
+  background: #63bbff;
+}
+
+/* 低速PC/ユーザー設定でアニメ減らす */
+@media (prefers-reduced-motion: reduce) {
+  .button-ripple::after {
+    transition: none;
+  }
+  .button-ripple:hover::after,
+  .button-ripple:focus-visible::after {
+    width: 200%;
+    height: 200%;
+  }
+}
+
+
+/* 既存の .links はそのまま使えます */
+.links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* =========================================
+   A) グラデーションスライド型
+   - 通常: 青系
+   - ホバー: ピンク系が左→右にスライドイン
+   ========================================= */
+.button-slide {
+  position: relative;
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 30px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  overflow: hidden;
+  line-height: 1;
+  background: linear-gradient(90deg, #4facfe, #00f2fe); /* 青系 */
+  transition: color 0.3s ease, background 0.3s ease;
+}
+
+.button-slide span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ピンクのレイヤーをスライドさせて「流れる」変化を実現 */
+.button-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #ff6a88, #ff99ac); /* ピンク系 */
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+
+.button-slide:hover::before,
+.button-slide:focus-visible::before {
+  transform: translateX(0);
+}
+
+.button-slide:focus-visible {
+  outline: 3px solid rgba(79,172,254,0.4);
+  outline-offset: 3px;
+}
+
+/* =========================================
+   B) 枠線グラデーションフェード型
+   - 通常: 青い枠線＋文字
+   - ホバー: 枠がピンクに、背景に淡いピンクが左→右に流れる
+   ========================================= */
+.button-border {
+  position: relative;
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  line-height: 1;
+  color: #4facfe;                  /* 文字: 青 */
+  border: 2px solid #4facfe;       /* 枠: 青 */
+  overflow: hidden;
+  background: transparent;
+  transition: color 0.4s ease, border-color 0.4s ease;
+}
+
+.button-border span {
+  position: relative;
+  z-index: 1;
+}
+
+/* 中身に淡いピンクグラデーションが左→右に流れる */
+.button-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255,106,136,0.18), rgba(255,153,172,0.18));
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  z-index: 0;
+}
+
+.button-border:hover::before,
+.button-border:focus-visible::before {
+  transform: translateX(0);
+}
+
+/* 枠線・文字色もピンクへ */
+.button-border:hover,
+.button-border:focus-visible {
+  color: #ff6a88;
+  border-color: #ff6a88;
+}
+
+.button-border:focus-visible {
+  outline: 3px solid rgba(255,106,136,0.35);
+  outline-offset: 3px;
+}
+
+/* アニメ軽減設定に配慮 */
+@media (prefers-reduced-motion: reduce) {
+  .button-slide::before,
+  .button-border::before {
+    transition: none;
+  }
+}
+
+/* ================================
+   THEME COLORS（あとで微調整しやすいように変数化）
+   ※ Sprixのコーポレートカラーに寄せたければここを差し替え
+================================ */
+:root {
+  --blue-1: #2f80ed;  /* 通常時の濃い青 */
+  --blue-2: #56ccf2;  /* 通常時の明るい青 */
+  --pink-1: #ff6a88;  /* ホバー時の濃いピンク */
+  --pink-2: #ff99ac;  /* ホバー時の明るいピンク */
+
+  --radius: 30px;     /* 角丸 */
+  --pad-y: 12px;
+  --pad-x: 24px;
+  --font-w: 700;
+  --font-size: 16px;
+}
+
+/* ボタンを並べるコンテナ */
+.links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+
+/* 下段に置くときの中央寄せ・余白を明示 */
+.links--below {
+  justify-content: center;   /* 左右中央揃え */
+  width: 100%;               /* コンテンツ幅いっぱいを確保 */
+  margin-top: 24px;          /* スライド/自己紹介文との間隔 */
+}
+
+/* スマホ時は中央寄せのまま幅を広げて押しやすく */
+@media (max-width: 600px) {
+  .links--below {
+    margin-top: 20px;
+  }
+  .button-slide {
+    width: min(100%, 320px);
+    text-align: center;
+  }
+}
+
+
+/* スマホでは中央寄せ＆幅100%で扱いやすく */
+@media (max-width: 600px) {
+  .links {
+    justify-content: center;
+  }
+}
+
+/* ================================
+   グラデーションスライド型 最終版
+   - 通常: 青グラデ
+   - ホバー/フォーカス: ピンクグラデが左→右に流れ込む
+================================ */
+.button-slide {
+  position: relative;
+  display: inline-block;
+  padding: var(--pad-y) var(--pad-x);
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: var(--font-w);
+  font-size: var(--font-size);
+  line-height: 1;
+  color: #fff;
+  overflow: hidden;
+  /* 通常の背景（青グラデ） */
+  background: linear-gradient(90deg, var(--blue-1), var(--blue-2));
+  transition: transform 0.06s ease; /* クリック時に僅かに押し込み */
+  will-change: transform;
+}
+
+/* テキストを前面に */
+.button-slide > span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ピンクのレイヤーを左からスライドインさせて“流れる”表現 */
+.button-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--pink-1), var(--pink-2));
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+
+.button-slide:hover::before,
+.button-slide:focus-visible::before {
+  transform: translateX(0);
+}
+
+/* タップ/クリックの押し込み表現 */
+.button-slide:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* アクセシビリティ：キーボード操作時の視認性向上 */
+.button-slide:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--blue-1) 40%, transparent);
+  outline-offset: 3px;
+}
+
+/* スマホ操作のしやすさ（タップ間隔を確保） */
+.button-slide {
+  margin: 6px 0;
+}
+
+/* スマホでは幅を広げて押しやすく（最大320px程度） */
+@media (max-width: 600px) {
+  .button-slide {
+    width: min(100%, 320px);
+    text-align: center;
+  }
+}
+
+/* 低速環境/ユーザーの「アニメを減らす」設定に配慮 */
+@media (prefers-reduced-motion: reduce) {
+  .button-slide::before {
+    transition: none;
+  }
+  .button-slide:active {
+    transform: none;
+  }
+}
+
+/* もし既存の a リンク装飾が強い場合の衝突回避 */
+a.button-slide {
+  color: #fff !important;
+  border: none !important;
+}
+
+
+/* ページ幅を中央で揃えるラッパー（あれば不要） */
+.container { max-width: 1080px; margin: 0 auto; }
+
+/* 左右2カラム（既存の index と同じ感じで） */
+.intro-container {
+  display: grid;
+  grid-template-columns: minmax(280px, 520px) 1fr;
+  gap: 32px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+  .intro-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 見出し/リスト体裁 */
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 4px 0 12px;
+}
+
+.hobby-skill + .hobby-skill { margin-top: 16px; }
+
+.hobby-skill h3 {
+  font-size: 16px;
+  margin: 0 0 6px;
+  color: #666;
+}
+
+.bullet-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.bullet-list li {
+  line-height: 1.8;
+}
+
+/* 下段ボタン（中央・横並び）— 既に入れている場合はOK */
+.links { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.links--below { justify-content: center; width: 100%; margin-top: 24px; }
+
+/* ---- スライドの最低限のスタイル（一例） ---- */
+.carousel { position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+.carousel-track { display: flex; transition: transform 0.35s ease; }
+.carousel-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.5); color: #fff; border: 0; width: 36px; height: 36px;
+  border-radius: 18px; cursor: pointer;
+}
+.carousel-btn.prev { left: 8px; }
+.carousel-btn.next { right: 8px; }
+.carousel-dots { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; gap: 6px; }
+.carousel-dots .dot {
+  width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.5); border: 0; cursor: pointer;
+}
+.carousel-dots .dot.active { background: #fff; }
+
+.ikigomi-text {
+  text-align: center;   /* 中央揃え */
+  font-size: 2.5rem;    /* 大きくする（必要に応じて調整） */
+  font-weight: bold;    /* 太字 */
+  margin-top: 50px;     /* 上に余白 */
+}

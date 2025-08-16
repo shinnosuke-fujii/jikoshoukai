@@ -1,0 +1,152 @@
+<div class="intro-container">
+  <div class="carousel" id="intro-carousel">
+    <div class="carousel-track">
+      <%= image_tag "IMG_1852_Original.jpg", alt: "自己紹介", class: "carousel-slide", draggable: false %>
+      <%= image_tag "松本市.jpeg", alt: "松本市", class: "carousel-slide", draggable: false %>
+      <%= image_tag "信州大学.jpeg", alt: "信州大学", class: "carousel-slide", draggable: false %>
+    </div>
+    <button class="carousel-btn prev" aria-label="前へ">&#10094;</button>
+    <button class="carousel-btn next" aria-label="次へ">&#10095;</button>
+    <div class="carousel-dots"></div>
+  </div>
+
+  <div class="kihon">
+    <p>名前：藤井信乃介</p>
+    <p>生年月日：2003年6月4日</p>
+    <p>出身地：長野県松本市</p>
+    <p>大学：信州大学経法学部</p>
+  </div>
+</div>
+
+
+<div class="links links--below">
+  <%= link_to({ controller: "hello", action: "link" }, class: "button-slide") do %>
+    <span>趣味・特技</span>
+  <% end %>
+
+  <%= link_to({ controller: "hello", action: "ikigomi" }, class: "button-slide") do %>
+    <span>意気込み</span>
+  <% end %>
+</div>
+
+<script>
+(() => {
+  const root  = document.getElementById("intro-carousel");
+  const track = root.querySelector(".carousel-track");
+  const slides = Array.from(root.querySelectorAll(".carousel-slide"));
+  const prevBtn = root.querySelector(".prev");
+  const nextBtn = root.querySelector(".next");
+  const dotsWrap = root.querySelector(".carousel-dots");
+
+  let index = 0;
+  let timer = null;
+  const DURATION = 4000;          // 自動再生間隔(ms)
+  const SWIPE_THRESHOLD = 50;     // 何px動いたらページ送りするか
+  const SWIPE_VELOCITY  = 0.4;    // 高速スワイプの速度しきい値(px/ms)
+
+  // ドット生成
+  slides.forEach((_, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "dot" + (i === 0 ? " active" : "");
+    dot.addEventListener("click", () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  function setTranslateByIndex(i) {
+    track.style.transition = "transform 0.5s ease";
+    track.style.transform = `translateX(${-i * 100}%)`;
+  }
+
+  function update() {
+    setTranslateByIndex(index);
+    dotsWrap.querySelectorAll(".dot").forEach((d, i) => {
+      d.classList.toggle("active", i === index);
+    });
+  }
+
+  function goTo(i) {
+    index = (i + slides.length) % slides.length;
+    update();
+    restart();
+  }
+  function next() { goTo(index + 1); }
+  function prev() { goTo(index - 1); }
+
+  prevBtn.addEventListener("click", prev);
+  nextBtn.addEventListener("click", next);
+
+  function start() { timer = setInterval(next, DURATION); }
+  function stop()  { if (timer) clearInterval(timer); }
+  function restart(){ stop(); start(); }
+
+  // ===== スワイプ（タッチ & マウスドラッグ）対応 =====
+  let isDown = false;
+  let startX = 0;
+  let lastX = 0;
+  let startTime = 0;
+
+  // スクロールと競合しにくくする：横にしっかり動いた時だけ preventDefault
+  function onPointerDown(clientX) {
+    isDown = true;
+    startX = lastX = clientX;
+    startTime = performance.now();
+    stop(); // ドラッグ中は自動再生停止
+    track.style.transition = "none"; // 追従させるため一旦トランジション無効
+  }
+
+  function onPointerMove(clientX, e) {
+    if (!isDown) return;
+    const dx = clientX - startX;
+    lastX = clientX;
+
+    // 横方向にそれなりに動いたらスクロール阻止
+    if (e && Math.abs(dx) > 10) e.preventDefault();
+
+    const w = root.clientWidth;
+    const percent = (dx / w) * 100;
+    track.style.transform = `translateX(${-(index * 100) + percent}%)`;
+  }
+
+  function onPointerUp() {
+    if (!isDown) return;
+    isDown = false;
+
+    const dx = lastX - startX;
+    const dt = Math.max(1, performance.now() - startTime);
+    const v = Math.abs(dx) / dt; // px/ms
+
+    if (Math.abs(dx) > SWIPE_THRESHOLD || v > SWIPE_VELOCITY) {
+      if (dx < 0) next(); else prev();
+    } else {
+      // 元の位置にスナップ
+      setTranslateByIndex(index);
+      start();
+    }
+  }
+
+  // タッチ
+  root.addEventListener("touchstart", (e) => onPointerDown(e.touches[0].clientX), {passive: true});
+  root.addEventListener("touchmove",  (e) => onPointerMove(e.touches[0].clientX, e), {passive: false});
+  root.addEventListener("touchend",   onPointerUp);
+  root.addEventListener("touchcancel",onPointerUp);
+
+  // マウス（PC）
+  root.addEventListener("mousedown", (e) => onPointerDown(e.clientX));
+  window.addEventListener("mousemove", (e) => onPointerMove(e.clientX, e));
+  window.addEventListener("mouseup", onPointerUp);
+
+  // 画像のドラッグ選択を防ぐ
+  slides.forEach(img => {
+    img.addEventListener("dragstart", (e) => e.preventDefault());
+  });
+
+  // ホバーで一時停止（PC）
+  root.addEventListener("mouseenter", stop);
+  root.addEventListener("mouseleave", start);
+
+  // 初期化
+  update(); start();
+})();
+</script>
+
