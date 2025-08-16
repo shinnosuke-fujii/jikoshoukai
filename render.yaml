@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: jikoshoukai
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: ./bin/thrust ./bin/rails server
+    dockerBuildArgs:
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
